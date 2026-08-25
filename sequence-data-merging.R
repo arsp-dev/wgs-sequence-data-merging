@@ -23,15 +23,22 @@ find_and_read <- function(dir, pattern, reader, recursive = TRUE, required = TRU
 #--- User input ---
 batch_code <- dlgInput("Enter Batch Code:", Sys.info()["user"])$res
 
-base_path      <- file.path("F:/SequenceData/batch", batch_code)
+base_path      <- file.path("D:/SequenceData/batch/", batch_code)
 bactopia_path  <- file.path(base_path, "bactopia")
 
 #--- Read each result file ---
 bactscout_result   <- find_and_read(base_path, "^final_summary\\.csv$", read.csv, stringsAsFactors = FALSE)
-amrfinder_result    <- find_and_read(file.path(bactopia_path, "amrfinder"), "amrfinder_all_results", read.xlsx, recursive = FALSE)
-checkm2_result      <- read_tsv(file.path(bactopia_path, "checkm2/checkm2_out/quality_report.tsv"))
-gambit_result       <- read_tsv(file.path(bactopia_path, "gambit", paste0(batch_code, "_gambit.tsv")))
-mlst_result         <- read_tsv(file.path(bactopia_path, "mlst/combined_mlst.tsv"))
+
+amrfinder_result   <- find_and_read(
+  file.path(bactopia_path, "amrfinder"),
+  "amrfinder_all_results.*\\.xlsx$",
+  read.xlsx,
+  recursive = FALSE
+)
+
+checkm2_result      <- read_tsv(file.path(bactopia_path, "checkm2/checkm2_out/quality_report.tsv"), show_col_types = FALSE)
+gambit_result       <- read_delim(file.path(bactopia_path, "gambit/", paste0(batch_code, "_gambit.tsv")), delim = ",", show_col_types = FALSE)
+mlst_result         <- read_tsv(file.path(bactopia_path, paste0("mlst/",batch_code,"_mlst_combined.tsv")), show_col_types = FALSE)
 
 assembly_scan_data  <- find_and_read(
   file.path(bactopia_path, "output/bactopia-runs"),
@@ -40,7 +47,7 @@ assembly_scan_data  <- find_and_read(
 )
 
 #--- Append results to Google Sheet ---
-sheet_id <- "1VD5jlpE3sa63OLb6NEZWwq05ZQS8TZ8nQPYiRupgfmE"
+sheet_id <- "1OUnMF78Nftwu442t7N3Ly6JoEW8Wmk5z9cNY7b_KOzY"
 
 results_to_append <- list(
   bactscout     = bactscout_result,
